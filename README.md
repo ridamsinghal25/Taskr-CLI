@@ -1,4 +1,4 @@
-# cli
+# CLI
 
 To install dependencies:
 
