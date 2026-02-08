@@ -5,8 +5,9 @@ import CategoryService from "../../services/category.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
 import { isApiError } from "../../lib/typeGuard.js";
 import { blueBright, formatText, red } from "../../lib/logger.js";
-import { GetCategories } from "../../types/category.js";
+import { Category } from "../../types/category.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function getCategoryAction() {
   intro(formatText("📂 Your Categories", "white" , ["bold"]));
@@ -18,19 +19,22 @@ export async function getCategoryAction() {
     process.exit(1);
   }
 
-  const response = await CategoryService.getCategories<GetCategories>();
+  const response = await withSpinner(
+    "Fetching categories...",
+    () => CategoryService.getCategories<Category[]>()
+  );
 
   if (isApiError(response)) {
     outro(formatText(response.errorResponse?.message || "Failed to create category", "red"));
     process.exit(1);
   }
 
-  if (response.data.categories.length === 0) {
+  if (response.data?.length === 0) {
     outro(formatText("No categories found.", "yellow"));
     process.exit(0);
   }
 
-  response.data.categories.forEach((category, index) => {
+  response.data.forEach((category, index) => {
     console.log(
       `${index + 1}. ${formatText(category.name, "cyan")} ${formatText(
         `(id: ${category.id})`
@@ -40,7 +44,7 @@ export async function getCategoryAction() {
 
   const selectedCategories = await multiselect({
     message: "Select categories to copy there ids",
-    options: response.data.categories.map((category) => ({
+    options: response.data.map((category) => ({
       label: category.name,
       value: category.id,
     })),

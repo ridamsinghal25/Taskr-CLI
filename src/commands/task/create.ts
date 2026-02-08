@@ -6,6 +6,7 @@ import { formatText } from "../../lib/logger.js";
 import { Task, TaskType, TaskStatus, TASK_TYPES, TASK_STATUSES } from "../../types/task.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function createTaskAction(
   name: string,
@@ -59,11 +60,14 @@ export async function createTaskAction(
     taskStatus = selectedStatus as TaskStatus;
   }
 
-  const response = await TaskService.createTask<Task>(
-    name,
-    taskType,
-    taskStatus,
-    categoryId
+  const response = await withSpinner(
+    "Creating task...",
+    () => TaskService.createTask<Task>(
+      name,
+      taskType,
+      taskStatus,
+      categoryId
+    )
   );
 
   if (isApiResponse(response)) {

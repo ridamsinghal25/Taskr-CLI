@@ -6,6 +6,7 @@ import { formatText } from "../../lib/logger.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { Task, TaskType, TaskStatus } from "../../types/task.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function updateTaskAction(
   taskId: string,
@@ -46,10 +47,13 @@ export async function updateTaskAction(
     process.exit(1);
   }
 
-  const response = await TaskService.updateTask<Partial<Task>>(
-    taskId,
-    categoryId,
-    updates
+  const response = await withSpinner(
+    "Updating task...",
+    () => TaskService.updateTask<Partial<Task>>(
+      taskId,
+      categoryId,
+      updates
+    )
   );
 
   if (isApiResponse(response)) {

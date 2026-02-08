@@ -6,10 +6,6 @@ export type Category = {
   updatedAt: Date;
 };
 
-export type GetCategories = {
-  categories: Category[];
-};
-
 export type DeleteCategories = {
   count: number
 }

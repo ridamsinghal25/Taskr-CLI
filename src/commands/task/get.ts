@@ -6,8 +6,9 @@ import TaskService from "../../services/task.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
 import { isApiError } from "../../lib/typeGuard.js";
 import { blueBright, formatText, red } from "../../lib/logger.js";
-import { GetTasks, Task } from "../../types/task.js";
+import { Task } from "../../types/task.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function getTasksAction(categoryId?: string, taskId?: string) {
   intro(formatText("📋 Your Tasks", "white" , ["bold"]));
@@ -21,7 +22,10 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
 
   // If taskId is provided, get single task
   if (taskId) {
-    const response = await TaskService.getTaskById<Task>(taskId);
+    const response = await withSpinner(
+      "Fetching task...",
+      () => TaskService.getTaskById<Task>(taskId)
+    );
 
     if (isApiError(response)) {
       outro(formatText(response.errorResponse?.message || "Failed to get task", "red"));
@@ -42,19 +46,22 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
 
   // If categoryId is provided, get tasks by category
   if (categoryId) {
-    const response = await TaskService.getTasksByCategoryId<GetTasks>(categoryId);
+    const response = await withSpinner(
+      "Fetching tasks...",
+      () => TaskService.getTasksByCategoryId<Task[]>(categoryId)
+    );
 
     if (isApiError(response)) {
       outro(formatText(response.errorResponse?.message || "Failed to get tasks", "red"));
       process.exit(1);
     }
 
-    if (response.data.tasks.length === 0) {
+    if (response.data.length === 0) {
       outro(formatText("No tasks found in this category.", "yellow"));
       process.exit(0);
     }
 
-    response.data.tasks.forEach((task, index) => {
+    response.data.forEach((task, index) => {
       console.log(
         `${index + 1}. ${formatText(task.name, "cyan")} ${formatText(
           `(id: ${task.id})`
@@ -64,7 +71,7 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
 
     const selectedTasks = await multiselect({
       message: "Select tasks to copy their ids",
-      options: response.data.tasks.map((task) => ({
+      options: response.data.map((task) => ({
         label: `${task.name} (${task.status})`,
         value: task.id,
       })),

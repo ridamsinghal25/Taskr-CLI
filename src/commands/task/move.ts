@@ -6,6 +6,7 @@ import { formatText } from "../../lib/logger.js";
 import { Task } from "../../types/task.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function moveTaskAction(taskId: string, categoryId: string) {
   intro(formatText("🔄 Move Task", "white" , ["bold"]));
@@ -17,7 +18,10 @@ export async function moveTaskAction(taskId: string, categoryId: string) {
     process.exit(1);
   }
 
-  const response = await TaskService.moveTaskToCategory<Task>(taskId, categoryId);
+  const response = await withSpinner(
+    "Moving task...",
+    () => TaskService.moveTaskToCategory<Task>(taskId, categoryId)
+  );
 
   if (isApiResponse(response)) {
     outro(formatText(response.message || "Task moved successfully", "green"));

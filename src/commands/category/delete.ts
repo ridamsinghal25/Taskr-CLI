@@ -6,6 +6,7 @@ import { DeleteCategories} from "../../types/category.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { formatText } from "../../lib/logger.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function deleteCategoriesAction(ids: string) {
   intro(formatText("🗑️ Delete Categories", "white" , ["bold"]));
@@ -37,7 +38,10 @@ export async function deleteCategoriesAction(ids: string) {
     process.exit(1);
   }
 
-  const response = await CategoryService.deleteCategories<DeleteCategories>(categoryIds);
+  const response = await withSpinner(
+    "Deleting categories...",
+    () => CategoryService.deleteCategories<DeleteCategories>(categoryIds)
+  )
 
   if (isApiResponse(response)) {
     outro(formatText(response.message || "Categories deleted successfully", "green"));

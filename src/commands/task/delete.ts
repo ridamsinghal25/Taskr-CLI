@@ -6,6 +6,7 @@ import { DeleteTasks } from "../../types/task.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { formatText } from "../../lib/logger.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function deleteTasksAction(taskIds: string, categoryId: string) {
   intro(formatText("🗑️ Delete Tasks", "white" , ["bold"]));
@@ -37,9 +38,12 @@ export async function deleteTasksAction(taskIds: string, categoryId: string) {
     process.exit(1);
   }
 
-  const response = await TaskService.deleteTasksFromCategory<DeleteTasks>(
-    ids,
-    categoryId
+  const response = await withSpinner(
+    "Deleting tasks...",
+    () => TaskService.deleteTasksFromCategory<DeleteTasks>(
+      ids,
+      categoryId
+    )
   );
 
   if (isApiResponse(response)) {

@@ -7,6 +7,7 @@ import { isApiResponse } from "../../lib/typeGuard.js";
 import chalk from "chalk";
 import { intro, outro } from "@clack/prompts";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 // ============================================
 // WHOAMI COMMAND
@@ -22,7 +23,10 @@ export async function whoamiAction() {
     process.exit(1);
   }
 
-  const user = await UserServices.getCurrentUser<User>();
+  const user = await withSpinner(
+    "Fetching user information...",
+    () => UserServices.getCurrentUser<User>()
+  );
 
   if (isApiResponse(user)) {
     // Output user session info

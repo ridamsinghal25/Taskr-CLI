@@ -7,6 +7,7 @@ import { red, formatText } from "../../lib/logger.js";
 import { Category } from "../../types/category.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function createCategoryAction(name: string) {
   intro(formatText("📁 Create Category", "white" , ["bold"]));
@@ -18,7 +19,10 @@ export async function createCategoryAction(name: string) {
     process.exit(1);
   }
 
-  const response = await CategoryService.createCategory<Category>(name);
+  const response = await withSpinner(
+    "Creating category...",
+    () => CategoryService.createCategory<Category>(name)
+  );
 
   if (isApiResponse(response)) {
     outro(formatText(response.message || "Category created successfully", "green"));

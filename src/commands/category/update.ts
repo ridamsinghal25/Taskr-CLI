@@ -6,6 +6,7 @@ import { formatText } from "../../lib/logger.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { Category } from "../../types/category.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
+import { withSpinner } from "../../lib/spinner.js";
 
 export async function updateCategoryAction(id: string, name: string) {
   intro(formatText("✏️ Update Category", "white" , ["bold"]));
@@ -27,7 +28,10 @@ export async function updateCategoryAction(id: string, name: string) {
     process.exit(1);
   }
 
-  const response = await CategoryService.updateCategory<Partial<Category>>(categoryId[0]!, name);
+  const response = await withSpinner(
+    "Updating category...",
+    () => CategoryService.updateCategory<Partial<Category>>(categoryId[0]!, name)
+  );
 
   if (isApiResponse(response)) {
     outro(formatText(response.message || "Category updated successfully", "green"));

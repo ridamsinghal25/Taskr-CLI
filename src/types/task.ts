@@ -23,10 +23,6 @@ export type Task = {
   updatedAt: Date;
 };
 
-export type GetTasks = {
-  tasks: Task[];
-};
-
 export type DeleteTasks = {
   count: number;
 };
