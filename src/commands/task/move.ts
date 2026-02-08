@@ -6,6 +6,7 @@ import { requireAuth } from "../../lib/auth-token.js";
 import { red } from "../../lib/logger.js";
 import { Task } from "../../types/task.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
+import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function moveTaskAction(taskId: string, categoryId: string) {
   intro(chalk.bold("🔄 Move Task"));
@@ -13,7 +14,7 @@ export async function moveTaskAction(taskId: string, categoryId: string) {
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    red("You are not authenticated. Please run login command first.");
+    red(ErrorMessageEnum.NOT_AUTHENTICATED);
     process.exit(1);
   }
 

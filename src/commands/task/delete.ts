@@ -6,6 +6,7 @@ import { requireAuth } from "../../lib/auth-token.js";
 import { DeleteTasks } from "../../types/task.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { red } from "../../lib/logger.js";
+import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function deleteTasksAction(taskIds: string, categoryId: string) {
   intro(chalk.bold("🗑️ Delete Tasks"));
@@ -33,7 +34,7 @@ export async function deleteTasksAction(taskIds: string, categoryId: string) {
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log("You are not authenticated. Please login.");
+    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
     process.exit(1);
   }
 

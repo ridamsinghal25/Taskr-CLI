@@ -3,9 +3,10 @@ import chalk from "chalk";
 import { Command } from "commander";
 import CategoryService from "../../services/category.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
-import { green, print, red } from "../../lib/logger.js";
+import { red } from "../../lib/logger.js";
 import { Category } from "../../types/category.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
+import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function createCategoryAction(name: string) {
   intro(chalk.bold("📁 Create Category"));
@@ -13,7 +14,7 @@ export async function createCategoryAction(name: string) {
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    red("You are not authenticated. Please run login command first.");
+    red(ErrorMessageEnum.NOT_AUTHENTICATED);
     process.exit(1);
   }
 

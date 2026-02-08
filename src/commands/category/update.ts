@@ -6,6 +6,7 @@ import { requireAuth } from "../../lib/auth-token.js";
 import { red } from "../../lib/logger.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { Category } from "../../types/category.js";
+import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function updateCategoryAction(id: string, name: string) {
   intro(chalk.bold("✏️ Update Category"));
@@ -23,7 +24,7 @@ export async function updateCategoryAction(id: string, name: string) {
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log("You are not authenticated. Please login.");
+    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
     process.exit(1);
   }
 

@@ -6,6 +6,7 @@ import { User } from "../../types/user.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import chalk from "chalk";
 import { intro, outro } from "@clack/prompts";
+import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 // ============================================
 // WHOAMI COMMAND
@@ -17,7 +18,7 @@ export async function whoamiAction() {
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log("You are not authenticated. Please run login command first.");
+    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
     process.exit(1);
   }
 

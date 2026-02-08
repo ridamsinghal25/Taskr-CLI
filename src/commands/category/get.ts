@@ -7,6 +7,7 @@ import { requireAuth } from "../../lib/auth-token.js";
 import { isApiError } from "../../lib/typeGuard.js";
 import { blueBright, red } from "../../lib/logger.js";
 import { GetCategories } from "../../types/category.js";
+import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function getCategoryAction() {
   intro(chalk.bold("📂 Your Categories"));
@@ -14,7 +15,7 @@ export async function getCategoryAction() {
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log("You are not authenticated. Please run login command first.");
+    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
     process.exit(1);
   }
 
