@@ -1,15 +1,14 @@
 import { cancel, confirm, intro, isCancel, outro } from "@clack/prompts";
-import chalk from "chalk";
 import { Command } from "commander";
 import CategoryService from "../../services/category.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
 import { DeleteCategories} from "../../types/category.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
-import { red } from "../../lib/logger.js";
+import { formatText } from "../../lib/logger.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function deleteCategoriesAction(ids: string) {
-  intro(chalk.bold("🗑️ Delete Categories"));
+  intro(formatText("🗑️ Delete Categories", "white" , ["bold"]));
 
   const categoryIds = ids
     .split(",")
@@ -17,7 +16,7 @@ export async function deleteCategoriesAction(ids: string) {
     .filter(Boolean);
 
   if (categoryIds.length === 0) {
-    console.log("No valid category IDs provided.");
+    outro(formatText("No valid category IDs provided.", "yellow"));
     process.exit(1);
   }
 
@@ -34,18 +33,18 @@ export async function deleteCategoriesAction(ids: string) {
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
+    outro(formatText(ErrorMessageEnum.NOT_AUTHENTICATED, "red"));
     process.exit(1);
   }
 
   const response = await CategoryService.deleteCategories<DeleteCategories>(categoryIds);
 
   if (isApiResponse(response)) {
-    outro(chalk.green(response.message || "Categories deleted successfully"));
+    outro(formatText(response.message || "Categories deleted successfully", "green"));
     process.exit(0);
   }
 
-  red(response.errorMessage || "Failed to delete categories");
+  outro(formatText(response.errorResponse?.message || "Failed to delete categories", "red"));
   process.exit(1);
 }
 

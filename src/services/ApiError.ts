@@ -1,13 +1,15 @@
-class ApiError {
+import { ErrorResponse } from "../types/response.js";
+
+class ApiError{
   public error: boolean;
   public errorMessage: string;
   public errorData: unknown;
-  public errorResponse: unknown;
+  public errorResponse: ErrorResponse | undefined;
 
   constructor(
     errorMessage: string,
     errorData: unknown,
-    errorResponse?: unknown,
+    errorResponse?: ErrorResponse | undefined,
   ) {
     this.error = true;
     this.errorMessage = errorMessage;

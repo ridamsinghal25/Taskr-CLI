@@ -1,6 +1,5 @@
 import { cancel, confirm, intro, isCancel, outro } from "@clack/prompts";
 import { logger } from "better-auth";
-import chalk from "chalk";
 import { Command } from "commander";
 import open from "open";
 import yoctoSpinner from "yocto-spinner";
@@ -13,7 +12,7 @@ import {
   TOKEN_FILE,
 } from "../../lib/auth-token.js";
 import { handleCliError } from "../../lib/errorHandler.js";
-import { blue, cyan, gray, green, logErrorMessage, yellow } from "../../lib/logger.js";
+import { blue, cyan, formatText, gray, green, logErrorMessage, yellow } from "../../lib/logger.js";
 
 export interface Token {
   access_token: string;
@@ -28,7 +27,7 @@ export interface Token {
 // ============================================
 
 export async function loginAction() {
-  intro(chalk.bold("🔐 Taskr Login"));
+  intro(formatText("🔐 Taskr Login", "white" , ["bold"]));
   const CLIENT_ID = config.GITHUB_CLIENT_ID;
 
   const clientId = CLIENT_ID;
@@ -104,11 +103,11 @@ export async function loginAction() {
     cyan("📱 Device Authorization Required");
     gray("");
     blue(
-      `Please visit: ${chalk.underline.blue(
+      `Please visit: ${formatText(verification_uri_complete || verification_uri, "blue", ["underline"])}
         verification_uri_complete || verification_uri
       )}`
     );
-    green(`Enter code: ${chalk.bold.green(user_code)}`);
+    green(`Enter code: ${formatText(user_code, "green", ["bold"])}`);
     gray("");
 
     // Ask if user wants to open browser
@@ -159,10 +158,9 @@ export async function loginAction() {
       });
 
       outro(
-        chalk.green(
-          `✅ Login successful! Welcome ${
-            session?.user?.name || session?.user?.email || "User"
-          }`
+        formatText(
+          `✅ Login successful! Welcome ${session?.user?.name || session?.user?.email || "User"}`,
+          "green"
         )
       );
 
@@ -189,8 +187,9 @@ async function pollForToken(
   return new Promise<Token | null>((resolve, reject) => {
     const poll = async () => {
       dots = (dots + 1) % 4;
-      spinner.text = chalk.gray(
-        `Polling for authorization${".".repeat(dots)}${" ".repeat(3 - dots)}`
+      spinner.text = formatText(
+        `Polling for authorization${".".repeat(dots)}${" ".repeat(3 - dots)}`,
+        "gray"
       );
       if (!spinner.isSpinning) spinner.start();
 

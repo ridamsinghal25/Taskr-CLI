@@ -5,17 +5,17 @@ import { Command } from "commander";
 import TaskService from "../../services/task.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
 import { isApiError } from "../../lib/typeGuard.js";
-import { blueBright, red } from "../../lib/logger.js";
+import { blueBright, formatText, red } from "../../lib/logger.js";
 import { GetTasks, Task } from "../../types/task.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function getTasksAction(categoryId?: string, taskId?: string) {
-  intro(chalk.bold("📋 Your Tasks"));
+  intro(formatText("📋 Your Tasks", "white" , ["bold"]));
 
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
+    outro(formatText(ErrorMessageEnum.NOT_AUTHENTICATED, "red"));
     process.exit(1);
   }
 
@@ -24,19 +24,19 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
     const response = await TaskService.getTaskById<Task>(taskId);
 
     if (isApiError(response)) {
-      red(response.errorMessage || "Failed to get task");
+      outro(formatText(response.errorResponse?.message || "Failed to get task", "red"));
       process.exit(1);
     }
 
     const task = response.data;
     console.log(
-      `${chalk.cyan(task.name)} ${chalk.gray(`(id: ${task.id})`)}`
+      `${formatText(task.name, "cyan")} ${formatText(`(id: ${task.id})`, "gray")}`
     );
-    console.log(`  Type: ${chalk.yellow(task.type)}`);
-    console.log(`  Status: ${chalk.yellow(task.status)}`);
-    console.log(`  Category ID: ${chalk.gray(task.categoryId)}`);
+    console.log(`  Type: ${formatText(task.type, "yellow")}`);
+    console.log(`  Status: ${formatText(task.status, "yellow")}`);
+    console.log(`  Category ID: ${formatText(task.categoryId, "gray")}`);
 
-    outro(chalk.green("✅ Task fetched"));
+    outro(formatText("✅ Task fetched", "green"));
     process.exit(0);
   }
 
@@ -45,20 +45,20 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
     const response = await TaskService.getTasksByCategoryId<GetTasks>(categoryId);
 
     if (isApiError(response)) {
-      red(response.errorMessage || "Failed to get tasks");
+      outro(formatText(response.errorResponse?.message || "Failed to get tasks", "red"));
       process.exit(1);
     }
 
     if (response.data.tasks.length === 0) {
-      outro(chalk.yellow("No tasks found in this category."));
+      outro(formatText("No tasks found in this category.", "yellow"));
       process.exit(0);
     }
 
     response.data.tasks.forEach((task, index) => {
       console.log(
-        `${index + 1}. ${chalk.cyan(task.name)} ${chalk.gray(
+        `${index + 1}. ${formatText(task.name, "cyan")} ${formatText(
           `(id: ${task.id})`
-        )} - ${chalk.yellow(task.status)} - ${chalk.yellow(task.type)}`
+        )} - ${formatText(task.status, "yellow")} - ${formatText(task.type, "yellow")}`
       );
     });
 
@@ -83,11 +83,11 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
       red("❌ No tasks selected");
     }
 
-    outro(chalk.green("✅ Tasks fetched"));
+    outro(formatText("✅ Tasks fetched", "green"));
     process.exit(0);
   }
 
-  red("Please provide either a categoryId or taskId");
+  outro(formatText("Please provide either a categoryId or taskId", "yellow"));
   process.exit(1);
 }
 

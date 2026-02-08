@@ -1,20 +1,20 @@
 import { cancel, confirm, intro, isCancel, outro } from "@clack/prompts";
-import chalk from "chalk";
 import { Command } from "commander";
 import { clearStoredToken, getStoredToken } from "../../lib/auth-token.js";
-import { yellow } from "../../lib/logger.js";
+import { formatText } from "../../lib/logger.js";
+import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 // ============================================
 // LOGOUT COMMAND
 // ============================================
 
 export async function logoutAction(..._args: any[]) {
-  intro(chalk.bold("👋 Logout"));
+  intro(formatText("👋 Logout", "white" , ["bold"]));
 
   const token = await getStoredToken();
 
   if (!token) {
-    console.log(chalk.yellow("You're not logged in."));
+    outro(formatText(ErrorMessageEnum.NOT_AUTHENTICATED, "yellow"));
     process.exit(0);
   }
 
@@ -31,9 +31,9 @@ export async function logoutAction(..._args: any[]) {
   const cleared = await clearStoredToken();
 
   if (cleared) {
-    outro(chalk.green("✅ Successfully logged out!"));
+    outro(formatText("✅ Successfully logged out!", "green"));
   } else {
-    yellow("⚠️  Could not clear token file.");
+    outro(formatText("⚠️  Could not clear token file.", "yellow"));
   }
 }
 

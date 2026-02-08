@@ -76,7 +76,8 @@ const logErrorMessage = (message: string) => {
 
 
 /**
- * Core printer
+ * Logs a styled message with custom color and modifiers.
+ * This is the core function used by all color helper functions.
  */
 export function print(
   message: string,
@@ -94,6 +95,24 @@ export function print(
   styled = styled[color];
 
   console.log(styled(message));
+}
+
+export function formatText(
+  message: string,
+  color: ChalkColor = "white",
+  modifiers: ChalkModifier[] = [],
+): string {
+  let styled = chalk;
+
+  // Apply modifiers first
+  for (const modifier of modifiers) {
+    styled = styled[modifier];
+  }
+
+  // Apply color
+  styled = styled[color];
+
+  return styled(message);
 }
 
 

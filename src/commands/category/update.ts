@@ -1,15 +1,14 @@
 import { intro, outro } from "@clack/prompts";
-import chalk from "chalk";
 import { Command } from "commander";
 import CategoryService from "../../services/category.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
-import { red } from "../../lib/logger.js";
+import { formatText } from "../../lib/logger.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { Category } from "../../types/category.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function updateCategoryAction(id: string, name: string) {
-  intro(chalk.bold("✏️ Update Category"));
+  intro(formatText("✏️ Update Category", "white" , ["bold"]));
 
   const categoryId = id
     .split(",")
@@ -17,25 +16,25 @@ export async function updateCategoryAction(id: string, name: string) {
     .filter(Boolean);
 
   if (categoryId.length !== 1) {
-    red("You can only update one category at a time");
+    outro(formatText("You can only update one category at a time", "yellow"));
     process.exit(1);
   }
 
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
+    outro(formatText(ErrorMessageEnum.NOT_AUTHENTICATED, "red"));
     process.exit(1);
   }
 
   const response = await CategoryService.updateCategory<Partial<Category>>(categoryId[0]!, name);
 
   if (isApiResponse(response)) {
-    outro(chalk.green(response.message || "Category updated successfully"));
+    outro(formatText(response.message || "Category updated successfully", "green"));
     process.exit(0);
   }
 
-  red(response.errorMessage || "Failed to update category");
+  outro(formatText(response.errorResponse?.message || "Failed to update category", "red"));
   process.exit(1);
 }
 

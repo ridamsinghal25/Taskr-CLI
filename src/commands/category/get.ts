@@ -1,41 +1,40 @@
 import { intro, outro, multiselect } from "@clack/prompts";
-import chalk from "chalk";
 import clipboardy from "clipboardy";
 import { Command } from "commander";
 import CategoryService from "../../services/category.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
 import { isApiError } from "../../lib/typeGuard.js";
-import { blueBright, red } from "../../lib/logger.js";
+import { blueBright, formatText, red } from "../../lib/logger.js";
 import { GetCategories } from "../../types/category.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function getCategoryAction() {
-  intro(chalk.bold("📂 Your Categories"));
+  intro(formatText("📂 Your Categories", "white" , ["bold"]));
 
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
+    outro(formatText(ErrorMessageEnum.NOT_AUTHENTICATED, "red"));
     process.exit(1);
   }
 
   const response = await CategoryService.getCategories<GetCategories>();
 
   if (isApiError(response)) {
-    red(response.errorMessage || "Failed to create category");
+    outro(formatText(response.errorResponse?.message || "Failed to create category", "red"));
     process.exit(1);
   }
 
   if (response.data.categories.length === 0) {
-    outro(chalk.yellow("No categories found."));
+    outro(formatText("No categories found.", "yellow"));
     process.exit(0);
   }
 
   response.data.categories.forEach((category, index) => {
     console.log(
-      `${index + 1}. ${chalk.cyan(category.name)} ${chalk.gray(
+      `${index + 1}. ${formatText(category.name, "cyan")} ${formatText(
         `(id: ${category.id})`
-      )}`
+      , "gray")}`
     );
   });
 
@@ -60,7 +59,7 @@ export async function getCategoryAction() {
     red("❌ No categories selected")
   }
 
-  outro(chalk.green("✅ Categories fetched"));
+  outro(formatText("✅ Categories fetched", "green"));
   process.exit(0);
 }
 

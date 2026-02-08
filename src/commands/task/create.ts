@@ -1,9 +1,8 @@
 import { intro, outro, select } from "@clack/prompts";
-import chalk from "chalk";
 import { Command } from "commander";
 import TaskService from "../../services/task.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
-import { red } from "../../lib/logger.js";
+import { formatText } from "../../lib/logger.js";
 import { Task, TaskType, TaskStatus, TASK_TYPES, TASK_STATUSES } from "../../types/task.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
@@ -14,12 +13,12 @@ export async function createTaskAction(
   type?: TaskType,
   status?: TaskStatus
 ) {
-  intro(chalk.bold("✅ Create Task"));
+    intro(formatText("✅ Create Task", "white" , ["bold"]));
 
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    red(ErrorMessageEnum.NOT_AUTHENTICATED);
+    outro(formatText(ErrorMessageEnum.NOT_AUTHENTICATED, "red"));
     process.exit(1);
   }
 
@@ -36,7 +35,7 @@ export async function createTaskAction(
     });
 
     if (typeof selectedType === "symbol") {
-      red("Task creation cancelled");
+      outro(formatText("Task creation cancelled", "yellow"));
       process.exit(1);
     }
 
@@ -53,7 +52,7 @@ export async function createTaskAction(
     });
 
     if (typeof selectedStatus === "symbol") {
-      red("Task creation cancelled");
+      outro(formatText("Task creation cancelled", "yellow"));
       process.exit(1);
     }
 
@@ -68,11 +67,11 @@ export async function createTaskAction(
   );
 
   if (isApiResponse(response)) {
-    outro(chalk.green(response.message || "Task created successfully"));
+    outro(formatText(response.message || "Task created successfully", "green"));
     process.exit(0);
   }
 
-  red(response.errorMessage || "Failed to create task");
+  outro(formatText(response.errorResponse?.message || "Failed to create task", "red"));
   process.exit(1);
 }
 

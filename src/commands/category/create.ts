@@ -3,13 +3,13 @@ import chalk from "chalk";
 import { Command } from "commander";
 import CategoryService from "../../services/category.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
-import { red } from "../../lib/logger.js";
+import { red, formatText } from "../../lib/logger.js";
 import { Category } from "../../types/category.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function createCategoryAction(name: string) {
-  intro(chalk.bold("📁 Create Category"));
+  intro(formatText("📁 Create Category", "white" , ["bold"]));
 
   const token = await requireAuth();
 
@@ -21,11 +21,11 @@ export async function createCategoryAction(name: string) {
   const response = await CategoryService.createCategory<Category>(name);
 
   if (isApiResponse(response)) {
-    outro(chalk.green(response.message || "Category created successfully"));
+    outro(formatText(response.message || "Category created successfully", "green"));
     process.exit(0);
   }
 
-  red(response.errorMessage || "Failed to create category");
+  outro(formatText(response.errorResponse?.message || "Failed to create category", "red"));
   process.exit(1);
 }
 

@@ -1,15 +1,14 @@
 import { cancel, confirm, intro, isCancel, outro } from "@clack/prompts";
-import chalk from "chalk";
 import { Command } from "commander";
 import TaskService from "../../services/task.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
 import { DeleteTasks } from "../../types/task.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
-import { red } from "../../lib/logger.js";
+import { formatText } from "../../lib/logger.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 
 export async function deleteTasksAction(taskIds: string, categoryId: string) {
-  intro(chalk.bold("🗑️ Delete Tasks"));
+  intro(formatText("🗑️ Delete Tasks", "white" , ["bold"]));
 
   const ids = taskIds
     .split(",")
@@ -17,7 +16,7 @@ export async function deleteTasksAction(taskIds: string, categoryId: string) {
     .filter(Boolean);
 
   if (ids.length === 0) {
-    console.log("No valid task IDs provided.");
+    outro(formatText("No valid task IDs provided.", "yellow"));
     process.exit(1);
   }
 
@@ -34,7 +33,7 @@ export async function deleteTasksAction(taskIds: string, categoryId: string) {
   const token = await requireAuth();
 
   if (!token?.access_token) {
-    console.log(ErrorMessageEnum.NOT_AUTHENTICATED);
+    outro(formatText(ErrorMessageEnum.NOT_AUTHENTICATED, "red"));
     process.exit(1);
   }
 
@@ -44,11 +43,11 @@ export async function deleteTasksAction(taskIds: string, categoryId: string) {
   );
 
   if (isApiResponse(response)) {
-    outro(chalk.green(response.message || "Tasks deleted successfully"));
+    outro(formatText(response.message || "Tasks deleted successfully", "green"));
     process.exit(0);
   }
 
-  red(response.errorMessage || "Failed to delete tasks");
+  outro(formatText(response.errorResponse?.message || "Failed to delete tasks", "red"));
   process.exit(1);
 }
 

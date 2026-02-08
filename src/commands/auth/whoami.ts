@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { requireAuth } from "../../lib/auth-token.js";
 import UserServices from "../../services/user.services.js";
-import { green, red } from "../../lib/logger.js";
+import { formatText, green, red } from "../../lib/logger.js";
 import { User } from "../../types/user.js";
 import { isApiResponse } from "../../lib/typeGuard.js";
 import chalk from "chalk";
@@ -13,7 +13,7 @@ import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 // ============================================
 
 export async function whoamiAction() {
-  intro(chalk.bold("👤 Whoami"));
+  intro(formatText("👤 Whoami", "white" , ["bold"]));
 
   const token = await requireAuth();
 
@@ -32,11 +32,11 @@ export async function whoamiAction() {
     👤 ID: ${user.data.id}`
         , ["bold"]
         );
-    outro(chalk.green(user.message || "User information fetched successfully"));
+    outro(formatText(user.message || "User information fetched successfully", "green"));
     process.exit(0);
   }
 
-  red(user.errorMessage || "Failed to fetch user information");
+  outro(formatText(user.errorResponse?.message || "Failed to fetch user information", "red"));
   process.exit(1);
 }
 
