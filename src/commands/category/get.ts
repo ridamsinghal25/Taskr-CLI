@@ -36,17 +36,15 @@ export async function getCategoryAction() {
 
   response.data.forEach((category, index) => {
     console.log(
-      `${index + 1}. ${formatText(category.name, "cyan")} ${formatText(
-        `(id: ${category.id})`
-      , "gray")}`
+      `${index + 1}. ${formatText(category.name, "cyan")}`
     );
   });
 
   const selectedCategories = await multiselect({
-    message: "Select categories to copy there ids",
+    message: "Select categories to copy there names",
     options: response.data.map((category) => ({
       label: category.name,
-      value: category.id,
+      value: category.name,
     })),
     required: false,
   });
@@ -56,17 +54,18 @@ export async function getCategoryAction() {
 
     blueBright(
       `✅ ${
-        selectedCategories.length > 0 ? "Categories IDs" : "Category ID"
+        selectedCategories.length > 0 ? "Categories names" : "Category name"
       } copied to clipboard`
     )
   } else {
     red("❌ No categories selected")
   }
 
-  outro(formatText("✅ Categories fetched", "green"));
+  outro(formatText("✅ Categories fetched successfully", "green"));
   process.exit(0);
 }
 
 export const getCategory = new Command("get")
   .description("Get all categories")
+  .showHelpAfterError()
   .action(getCategoryAction);

@@ -1,5 +1,4 @@
 import { intro, outro } from "@clack/prompts";
-import chalk from "chalk";
 import { Command } from "commander";
 import CategoryService from "../../services/category.services.js";
 import { requireAuth } from "../../lib/auth-token.js";
@@ -36,4 +35,5 @@ export async function createCategoryAction(name: string) {
 export const createCategory = new Command("create")
   .description("Create a new category")
   .argument("<name>", "Category name")
+  .showHelpAfterError()
   .action(createCategoryAction);

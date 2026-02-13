@@ -8,18 +8,8 @@ import { Category } from "../../types/category.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 import { withSpinner } from "../../lib/spinner.js";
 
-export async function updateCategoryAction(id: string, name: string) {
+export async function updateCategoryAction(name: string, newName: string) {
   intro(formatText("✏️ Update Category", "white" , ["bold"]));
-
-  const categoryId = id
-    .split(",")
-    .map((id) => id.trim())
-    .filter(Boolean);
-
-  if (categoryId.length !== 1) {
-    outro(formatText("You can only update one category at a time", "yellow"));
-    process.exit(1);
-  }
 
   const token = await requireAuth();
 
@@ -30,7 +20,7 @@ export async function updateCategoryAction(id: string, name: string) {
 
   const response = await withSpinner(
     "Updating category...",
-    () => CategoryService.updateCategory<Partial<Category>>(categoryId[0]!, name)
+    () => CategoryService.updateCategoryByName<Partial<Category>>(name, newName)
   );
 
   if (isApiResponse(response)) {
@@ -44,6 +34,7 @@ export async function updateCategoryAction(id: string, name: string) {
 
 export const updateCategory = new Command("update")
   .description("Update a category")
-  .argument("<id>", "Category ID")
-  .argument("<name>", "New category name")
+  .argument("<name>", "Category name to update")
+  .argument("<newName>", "New category name")
+  .showHelpAfterError()
   .action(updateCategoryAction);
