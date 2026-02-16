@@ -5,7 +5,9 @@ import { updateTaskCommand } from "./update.js";
 import { deleteTasksCommand } from "./delete.js";
 import { moveTask } from "./move.js";
 
-export const task = new Command("task").description("Manage tasks");
+export const task = new Command("task")
+.alias("t")
+.description("Manage tasks");
 
 task.addCommand(createTask);
 task.addCommand(getTasks);

@@ -4,7 +4,9 @@ import { getCategory } from "./get.js";
 import { updateCategory } from "./update.js";
 import { deleteCategories } from "./delete.js";
 
-export const category = new Command("category").description(
+export const category = new Command("category")
+.alias("c")
+.description(
   "Manage categories"
 );
 
