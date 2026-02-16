@@ -10,7 +10,7 @@ import { category } from "./commands/category/index.js";
 import { task } from "./commands/task/index.js";
 import { logErrorMessage, gray, cyan } from "./lib/logger.js";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 async function main() {
   // Display banner
@@ -38,6 +38,18 @@ async function main() {
   program.action(() => {
     program.help();
   });
+
+  program.addHelpText(
+  "afterAll",
+    `
+  Note:
+    If any argument contains spaces, wrap it in quotes ("" or '').
+    
+  Example:
+    $ taskr category create "Work Tasks"
+  `
+  );
+
 
   program.parse();
 }
