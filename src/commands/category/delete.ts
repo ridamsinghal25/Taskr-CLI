@@ -33,7 +33,7 @@ export async function deleteCategoriesAction(names: string[]) {
   );
 
   if (isApiError(categories)) {
-    outro(formatText(categories.errorResponse?.message || "Failed to get categories", "red"));
+    outro(formatText(categories.errorResponse?.message || "Failed to delete categories", "red"));
     process.exit(1);
   }
 

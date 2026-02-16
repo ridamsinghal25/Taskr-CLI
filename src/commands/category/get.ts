@@ -25,7 +25,7 @@ export async function getCategoryAction() {
   );
 
   if (isApiError(response)) {
-    outro(formatText(response.errorResponse?.message || "Failed to create category", "red"));
+    outro(formatText(response.errorResponse?.message || "Failed to get categories", "red"));
     process.exit(1);
   }
 
