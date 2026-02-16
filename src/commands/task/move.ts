@@ -8,8 +8,23 @@ import { isApiResponse } from "../../lib/typeGuard.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 import { withSpinner } from "../../lib/spinner.js";
 
-export async function moveTaskAction(taskId: string, categoryId: string) {
-  intro(formatText("🔄 Move Task", "white" , ["bold"]));
+export async function moveTaskAction(taskName: string, categoryName: string, newCategoryName: string) {
+  intro(formatText(`🔄 Moving task ${taskName} from ${categoryName} to ${newCategoryName}`, "white" , ["bold"]));
+
+  if (!taskName) {
+    outro(formatText("Task name is required", "yellow"));
+    process.exit(1);
+  }
+
+  if (!categoryName) {
+    outro(formatText("Category name is required", "yellow"));
+    process.exit(1);
+  }
+
+  if (!newCategoryName) {
+    outro(formatText("New category name is required", "yellow"));
+    process.exit(1);
+  }
 
   const token = await requireAuth();
 
@@ -20,7 +35,7 @@ export async function moveTaskAction(taskId: string, categoryId: string) {
 
   const response = await withSpinner(
     "Moving task...",
-    () => TaskService.moveTaskToCategory<Task>(taskId, categoryId)
+    () => TaskService.moveTaskToCategoryByName<Task>(taskName, categoryName, newCategoryName)
   );
 
   if (isApiResponse(response)) {
@@ -34,6 +49,8 @@ export async function moveTaskAction(taskId: string, categoryId: string) {
 
 export const moveTask = new Command("move")
   .description("Move a task to another category")
-  .argument("<taskId>", "Task ID")
-  .argument("<categoryId>", "Destination category ID")
+  .argument("<taskName>", "Task Name")
+  .argument("<categoryName>", "Destination category Name")
+  .argument("<newCategoryName>", "New category Name")
+  .showHelpAfterError()
   .action(moveTaskAction);

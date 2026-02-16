@@ -1,5 +1,4 @@
 import { intro, outro, multiselect } from "@clack/prompts";
-import chalk from "chalk";
 import clipboardy from "clipboardy";
 import { Command } from "commander";
 import TaskService from "../../services/task.services.js";
@@ -10,8 +9,13 @@ import { Task } from "../../types/task.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 import { withSpinner } from "../../lib/spinner.js";
 
-export async function getTasksAction(categoryId?: string, taskId?: string) {
-  intro(formatText("📋 Your Tasks", "white" , ["bold"]));
+export async function getTasksAction(categoryName: string, taskName?: string) {
+  intro(formatText(`📋 Your Tasks in ${categoryName}`, "white" , ["bold"]));
+
+  if (!categoryName) {
+    outro(formatText("Category name is required", "yellow"));
+    process.exit(1);
+  }
 
   const token = await requireAuth();
 
@@ -20,35 +24,11 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
     process.exit(1);
   }
 
-  // If taskId is provided, get single task
-  if (taskId) {
-    const response = await withSpinner(
-      "Fetching task...",
-      () => TaskService.getTaskById<Task>(taskId)
-    );
-
-    if (isApiError(response)) {
-      outro(formatText(response.errorResponse?.message || "Failed to get task", "red"));
-      process.exit(1);
-    }
-
-    const task = response.data;
-    console.log(
-      `${formatText(task.name, "cyan")} ${formatText(`(id: ${task.id})`, "gray")}`
-    );
-    console.log(`  Type: ${formatText(task.type, "yellow")}`);
-    console.log(`  Status: ${formatText(task.status, "yellow")}`);
-    console.log(`  Category ID: ${formatText(task.categoryId, "gray")}`);
-
-    outro(formatText("✅ Task fetched", "green"));
-    process.exit(0);
-  }
-
-  // If categoryId is provided, get tasks by category
-  if (categoryId) {
+  // If categoryName is provided, get tasks by categoryName
+  if (categoryName && !taskName) {
     const response = await withSpinner(
       "Fetching tasks...",
-      () => TaskService.getTasksByCategoryId<Task[]>(categoryId)
+      () => TaskService.getTasksByCategoryName<Task[]>(categoryName)
     );
 
     if (isApiError(response)) {
@@ -63,17 +43,15 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
 
     response.data.forEach((task, index) => {
       console.log(
-        `${index + 1}. ${formatText(task.name, "cyan")} ${formatText(
-          `(id: ${task.id})`
-        )} - ${formatText(task.status, "yellow")} - ${formatText(task.type, "yellow")}`
+        `${index + 1}. ${formatText(task.name, "cyan")} - Status: ${formatText(task.status, "yellow")} - Type: ${formatText(task.type, "yellow")}`
       );
     });
 
     const selectedTasks = await multiselect({
-      message: "Select tasks to copy their ids",
+      message: "Select tasks to copy their names",
       options: response.data.map((task) => ({
-        label: `${task.name} (${task.status})`,
-        value: task.id,
+        label: task.name,
+        value: task.name,
       })),
       required: false,
     });
@@ -83,23 +61,47 @@ export async function getTasksAction(categoryId?: string, taskId?: string) {
 
       blueBright(
         `✅ ${
-          selectedTasks.length > 1 ? "Task IDs" : "Task ID"
+          selectedTasks.length > 1 ? "Task names" : "Task name"
         } copied to clipboard`
       );
     } else {
       red("❌ No tasks selected");
     }
 
-    outro(formatText("✅ Tasks fetched", "green"));
+    outro(formatText("✅ Tasks fetched successfully", "green"));
     process.exit(0);
   }
 
-  outro(formatText("Please provide either a categoryId or taskId", "yellow"));
+  // If taskName is provided, get single task
+  if (taskName && categoryName) {
+    const response = await withSpinner(
+      "Fetching task...",
+      () => TaskService.getTaskByName<Task>(taskName, categoryName)
+    );
+
+    if (isApiError(response)) {
+      outro(formatText(response.errorResponse?.message || "Failed to get task", "red"));
+      process.exit(1);
+    }
+
+    const task = response.data;
+    console.log(
+      `${formatText(task.name, "cyan")}`
+    );
+    console.log(`  Type: ${formatText(task.type, "yellow")}`);
+    console.log(`  Status: ${formatText(task.status, "yellow")}`);
+
+    outro(formatText("✅ Task fetched successfully", "green"));
+    process.exit(0);
+  }
+
+  outro(formatText("Please provide either a category name or both category name and task name", "yellow"));
   process.exit(1);
 }
 
 export const getTasks = new Command("get")
-  .description("Get tasks by category ID or a single task by ID")
-  .option("-c, --categoryId <categoryId>", "Category ID")
-  .option("-t, --taskId <taskId>", "Task ID")
-  .action((options) => getTasksAction(options.categoryId, options.taskId));
+  .description("Get tasks by category name or a single task by both category name and task name")
+  .argument("<categoryName>", "Category Name")
+  .option("-t, --taskName <taskName>", "Task Name")
+  .showHelpAfterError()
+  .action((categoryName, options) => getTasksAction(categoryName, options.taskName));

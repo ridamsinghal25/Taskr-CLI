@@ -9,13 +9,23 @@ import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 import { withSpinner } from "../../lib/spinner.js";
 
 export async function updateTaskAction(
-  taskId: string,
-  categoryId: string,
+  categoryName: string,
+  taskName: string,
   name?: string,
   type?: TaskType,
   status?: TaskStatus
 ) {
-  intro(formatText("✏️ Update Task", "white" , ["bold"]));
+  intro(formatText(`✏️ Update Task in ${categoryName}`, "white" , ["bold"]));
+
+  if (!categoryName) {
+    outro(formatText("Category name is required", "yellow"));
+    process.exit(1);
+  }
+
+  if (!taskName) {
+    outro(formatText("Task name is required", "yellow"));
+    process.exit(1);
+  }
 
   const token = await requireAuth();
 
@@ -49,9 +59,9 @@ export async function updateTaskAction(
 
   const response = await withSpinner(
     "Updating task...",
-    () => TaskService.updateTask<Partial<Task>>(
-      taskId,
-      categoryId,
+    () => TaskService.updateTaskByName<Partial<Task>>(
+      taskName,
+      categoryName,
       updates
     )
   );
@@ -67,11 +77,12 @@ export async function updateTaskAction(
 
 export const updateTaskCommand = new Command("update")
   .description("Update a task")
-  .argument("<taskId>", "Task ID")
-  .argument("<categoryId>", "Category ID")
+  .argument("<categoryName>", "Category Name")
+  .argument("<taskName>", "Task Name")
   .option("-n, --name <name>", "New task name")
   .option("-t, --type <type>", "Task type (normal|critical)")
   .option("-s, --status <status>", "Task status (pending|in_progress|done|archived)")
-  .action((taskId, categoryId, options) =>
-    updateTaskAction(taskId, categoryId, options.name, options.type, options.status)
-  );
+  .showHelpAfterError()
+  .action((categoryName, taskName, options) =>
+    updateTaskAction(categoryName, taskName, options.name, options.type, options.status)
+  )

@@ -8,22 +8,31 @@ import { formatText } from "../../lib/logger.js";
 import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 import { withSpinner } from "../../lib/spinner.js";
 
-export async function deleteTasksAction(taskIds: string, categoryId: string) {
-  intro(formatText("🗑️ Delete Tasks", "white" , ["bold"]));
+export async function deleteTasksAction(categoryName: string, taskNames: string[]) {
+  intro(formatText(`🗑️ Delete Tasks in ${categoryName}`, "white" , ["bold"]));
 
-  const ids = taskIds
-    .split(",")
-    .map((id) => id.trim())
+  if (!categoryName) {
+    outro(formatText("Category name is required", "yellow"));
+    process.exit(1);
+  }
+
+  const names = taskNames
+    .map((name) => name.trim().replace(",", ""))
     .filter(Boolean);
 
-  if (ids.length === 0) {
+  if (names.length === 0) {
     outro(formatText("No valid task IDs provided.", "yellow"));
     process.exit(1);
   }
 
+  if (!categoryName) {
+    outro(formatText("Category name is required", "yellow"));
+    process.exit(1);
+  }
+
   const shouldDelete = await confirm({
-    message: "Are you sure you want to delete these tasks?",
-    initialValue: false,
+    message: `Are you sure you want to delete these tasks: ${names.join(", ")}?`,
+    initialValue: true,
   });
 
   if (isCancel(shouldDelete) || !shouldDelete) {
@@ -40,9 +49,9 @@ export async function deleteTasksAction(taskIds: string, categoryId: string) {
 
   const response = await withSpinner(
     "Deleting tasks...",
-    () => TaskService.deleteTasksFromCategory<DeleteTasks>(
-      ids,
-      categoryId
+    () => TaskService.deleteTasksByName<DeleteTasks>(
+      categoryName,
+      names,
     )
   );
 
@@ -57,6 +66,7 @@ export async function deleteTasksAction(taskIds: string, categoryId: string) {
 
 export const deleteTasksCommand = new Command("delete")
   .description("Delete tasks from a category")
-  .argument("<taskIds>", "Comma-separated task IDs (e.g. id1,id2,id3, ...)")
-  .argument("<categoryId>", "Category ID")
+  .argument("<categoryName>", "Category Name")
+  .argument("<taskNames...>", "Comma-separated task names (e.g. name1,name2,name3, ...)")
+  .showHelpAfterError()
   .action(deleteTasksAction);

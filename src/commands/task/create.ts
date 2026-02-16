@@ -9,12 +9,17 @@ import { ErrorMessageEnum } from "../../enums/errorMessage.enum.js";
 import { withSpinner } from "../../lib/spinner.js";
 
 export async function createTaskAction(
+  categoryName: string,
   name: string,
-  categoryId: string,
   type?: TaskType,
   status?: TaskStatus
 ) {
-    intro(formatText("✅ Create Task", "white" , ["bold"]));
+  intro(formatText(`✅ Create Task in ${categoryName}`, "white" , ["bold"]));
+
+  if (!categoryName) {
+    outro(formatText("Category name is required", "yellow"));
+    process.exit(1);
+  }
 
   const token = await requireAuth();
 
@@ -62,11 +67,11 @@ export async function createTaskAction(
 
   const response = await withSpinner(
     "Creating task...",
-    () => TaskService.createTask<Task>(
+    () => TaskService.createTaskByCategoryName<Task>(
       name,
       taskType,
       taskStatus,
-      categoryId
+      categoryName
     )
   );
 
@@ -81,8 +86,11 @@ export async function createTaskAction(
 
 export const createTask = new Command("create")
   .description("Create a new task")
+  .argument("<categoryName>", "Category name")
   .argument("<name>", "Task name")
-  .argument("<categoryId>", "Category ID")
   .option("-t, --type <type>", "Task type (normal|critical)", "normal")
   .option("-s, --status <status>", "Task status (pending|in_progress|done|archived)", "pending")
-  .action(createTaskAction);
+  .showHelpAfterError()
+  .action((categoryName, name, options) =>
+    createTaskAction(categoryName, name, options.type as TaskType, options.status as TaskStatus)
+  );
