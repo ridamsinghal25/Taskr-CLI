@@ -8,6 +8,7 @@ import { Command } from "commander";
 import { auth } from "./commands/auth/index.js";
 import { category } from "./commands/category/index.js";
 import { task } from "./commands/task/index.js";
+import { note } from "./commands/note/index.js";
 import { logErrorMessage, gray, cyan } from "./lib/logger.js";
 
 dotenv.config({ quiet: true });
@@ -15,11 +16,11 @@ dotenv.config({ quiet: true });
 async function main() {
   // Display banner
   cyan(
-      figlet.textSync("Taskr CLI", {
-        font: "Standard",
-        horizontalLayout: "default",
-      })
-    );
+    figlet.textSync("Taskr CLI", {
+      font: "Standard",
+      horizontalLayout: "default",
+    }),
+  );
 
   gray("A Cli based Task Management Tool \n");
 
@@ -33,6 +34,7 @@ async function main() {
   program.addCommand(auth);
   program.addCommand(category);
   program.addCommand(task);
+  program.addCommand(note);
 
   // Default action shows help
   program.action(() => {
@@ -40,16 +42,15 @@ async function main() {
   });
 
   program.addHelpText(
-  "afterAll",
+    "afterAll",
     `
   Note:
     If any argument contains spaces, wrap it in quotes ("" or '').
     
   Example:
     $ taskr category create "Work Tasks"
-  `
+  `,
   );
-
 
   program.parse();
 }
@@ -57,4 +58,4 @@ async function main() {
 main().catch((err) => {
   logErrorMessage(`Error running Taskr CLI: ${err}`);
   process.exit(1);
-}); 
+});
